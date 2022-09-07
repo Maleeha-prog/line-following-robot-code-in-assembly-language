@@ -1,0 +1,76 @@
+#define F_CPU 16000000UL
+//DEFINING CRYSTAL FREQUENCY
+#include <avr/io.h>
+//INCLUDING AVR I/O LIBRARY
+
+#include <avr/interrupt.h>
+//INCLUDING AVR INTERUPTS LIBRARY
+#include <util/delay.h>
+//INCLUDING AVR DELAY LIBRARY
+int main(void)
+
+//MAIN PROGRAM
+
+{
+///////////////////SENSORS INPUT
+DDRC=(0<<PC0); //sensor R
+DDRC=(0<<PC1); //sensor S
+DDRC=(0<<PC2); //sensor L
+///SETTING PD6 OUTPUT FOR ENABLE i.e. speed controll using PWM MODE OF TIMER0
+DDRD = (1 << PD6); //SETTING PD6 OUTPUT FOR ENABLE-A.//speed motor a
+DDRD = (1 << PD5); //SETTING PD5 OUTPUT FOR ENABLE-B //speed motor b
+//////////////////OUTPUT PINS
+DDRD = (1 << PD2); //motor a = +
+DDRD = (1 << PD3); //motor a = -
+DDRD = (1 << PD4); //motor b = -
+DDRB = (1<<PB2); //motor b = +
+
+TCCR0A = (1 << COM0A) | (1 << WGM00) | (1 << WGM01 | 1 << CS00);
+//SETTING BITS HIGH IN TCCR0A REGISTER FOR FAST PWM MODE
+TIMSK0 = (1 << TOIE0);
+//SETTING INTERRUPT ENABLE IN TIME MASK REGISTER
+TCCR0B = (1 << COM0B) | (1 << WGM00) | (1 << WGM01 | 1 << CS00);
+//SETTING BITS HIGH IN TCCR0A REGISTER FOR FAST PWM MODE
+TIMSK0 = (1 << TOIE0);
+//SETTING INTERRUPT ENABLE IN TIME MASK REGISTER
+//////// SPEED SETTING TO 100
+OCR0A = 100;
+OCR0A = 100;
+while(1)
+{
+if((PORTC|=(0<<PC0)&PORTC|=(0<<PC1))==1)
+{
+//turn right
+
+PORTD &= ~(1 << PD2); //motor a = +
+DDRD &= ~(1 << PD3); //motor a = -
+DDRD |= (1 << PD4); //motor b = -
+PORTD &= ~(1<<PB2); //motor b = +
+
+}
+if((PORTC|=(0<<PC0))==1)
+{
+////turn left
+
+PORTD &= ~(1 << PD2); //motor a = +
+DDRD |= (1 << PD3); //motor a = -
+DDRD &= ~(1 << PD4); //motor b = -
+PORTD &= ~(1<<PB2); //motor b = +
+
+}
+if((PORTC|=(0<<PC2)&PORTC|=(0<<PC1))==1)
+{
+
+//turn left
+}
+if((PORTC|=(0<<PC2))==1)
+{
+}
+//for all other conditions the robot move forward
+PORTD &= ~(1 << PD2); //motor a = +
+DDRD |= (1 << PD3); //motor a = -
+DDRD |= (1 << PD4); //motor b = -
+PORTD &= ~(1<<PB2); //motor b = +
+
+}
+}
